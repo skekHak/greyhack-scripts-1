@@ -1,0 +1,187 @@
+Metaxploit = include_lib("/lib/metaxploit.so")
+if not Metaxploit then exit("Error: Can't find metaxploit library in the /lib path or the current folder")
+
+cryptools = include_lib("/lib/crypto.so")
+if not cryptools then exit("Error: Missing crypto library")
+
+auto = function(target)
+
+address = target
+router = get_router( address )
+
+if router == null then exit("nmap: ip address not found")
+ports = router.used_ports
+if ports == null then exit("nmap: ports not found")
+
+
+for port in ports
+
+	net_session = Metaxploit.net_use( address, port.port_number )
+	if not net_session then exit("Error: can't connect to net session") end if
+	libs = net_session.dump_lib
+	if typeof(libs) != "list" then
+		libs = [libs]
+	end if
+	for lib in libs
+		addrs = Metaxploit.scan(lib)
+		for addr in addrs
+			info = Metaxploit.scan_address(lib, addr)
+			info = info.remove("decompiling source...").remove("searching unsecure values...")
+			info = info[2:]
+			while info.indexOf("Unsafe check: ") != null or info.indexOf("<b>") != null or info.indexOf("</b>") != null
+				info = info.remove("Unsafe check: ").remove("<b>").remove("</b>")
+			end while
+			while info.indexOf("loop in array ") != null
+				info = info.replace("loop in array ", "<tag>")
+			end while
+			while info.indexOf("string copy in ") != null
+				info = info.replace("string copy in ", "<tag>")
+			end while
+			result = null
+			while info.indexOf("<tag>") != null
+				a = info.indexOf("<tag>") + 5
+				info = info.remove(info[:a])
+				str = info[:info.indexOf(".")]
+				//print(addr + " : " + str)
+				result = null
+				if lib.lib_name == "kernel_router.so" then
+					result = lib.overflow(addr, str, port.get_lan_ip)
+				else
+					result = lib.overflow(addr, str)
+				end if
+				if result != null then
+					type = typeof(result)
+					print("use "+type+"? y/n")
+					print("saying no here will search for other exploits")
+					opt = user_input()
+					if opt == "y" or opt == "Y" then
+					return [result,type]
+					end if
+					end if
+		end while
+		end for
+	end for
+end for
+
+					
+end function
+
+
+msg = function(msg,color)
+	print("<color="+color+">"+msg+"</color>")
+	end function
+
+lightShell = function(computer)
+	
+	msg("Light shell doesn't leave logs don't worry :)","green")
+	msg("Type 'help' for more commands.","green")
+	command = user_input("<color=orange>$:</color>")
+	sp = command.split(" ")
+	
+	if sp[0] == "help" then
+		msg("ps - Get running processes","green")
+		msg("touch [path] [filename] - Create a file at a directory","green")
+		msg("ls [dir] - Attempts too view a folders contents","green")
+		msg("cat [file] - Attempt too cat a file","green")
+		msg("exit - exit lightshell","green")
+	end if
+	
+	if sp[0] == "ps" then
+		procs = computer.show_procs
+		print(procs)
+end if
+
+	if sp[0] == "touch" then
+		pth = sp[1]
+		fn = sp[2]
+		computer.touch(pth,fn)
+end if
+
+	if sp[0] == "ls" then
+		dir = sp[1]
+		folder = computer.File(dir)
+		if folder == null then
+			msg("File non existant","red")
+			lightShell(computer)
+		end if
+		
+		for file in folder.get_files
+			print(file.name)
+		end for
+end if
+
+	if sp[0] == "cat" then
+		file = computer.File(sp[1])
+		if file == null then
+			msg("File non existant","red")
+			lightShell(computer)
+		end if
+		if file.has_permission("r") then
+			print(file.content)
+			lightShell(computer)
+		end if
+	end if
+	
+
+	if sp[0] == "exit" then
+		return
+	end if
+	
+	
+	
+	lightShell(computer)
+	
+end function
+
+
+msg("magical program v 0.0.1","purple")
+term = function()
+	target = user_input("IP: ")
+	
+	got = auto(target)
+	
+	obj =got[0]
+	type = got[1]
+	
+	if type == "shell" then
+		print("we got a shell")
+		print("use it? y/n")
+		said = user_input("said:")
+		if said == "y" or said == "Y" then
+			obj.start_terminal
+		else
+			term
+		end if
+end if
+
+	if type == "file" then
+		if obj.name == "etc" then
+			for file in obj.get_files
+				if file.name == "passwd" then
+					print(file.content)
+				end if
+			end for
+	end if
+	
+	end if
+	
+
+	if type == "computer" then
+		print("Use LightShell? (lesser priviledged shell)")
+		said = user_input("said:")
+		if said == "y" or said == "Y" then
+			lightShell(obj)
+			term
+		else
+			term
+		end if
+		
+	end if
+	
+	term
+end function
+term
+
+
+
+
