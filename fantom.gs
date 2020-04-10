@@ -31,7 +31,7 @@ end if
 
 
 
-hackrouter = function(ip,lan)
+hackrouter = function(ip,lan) //Some of the code here is from a example universal exploit script I know how it works just too lazy
 	
 	r=get_router(ip)
 	
@@ -102,7 +102,7 @@ end function
 
 
 
-hack = function(ip,port)
+hack = function(ip,port) //Some of the code here is from a example universal exploit script I know how it works just too lazy
 	
 	r=get_router(ip)
 	
