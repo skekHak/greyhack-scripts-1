@@ -31,8 +31,7 @@ end if
 
 
 
-hackrouter = function(ip,lan) //Some of the code here is from a example universal exploit script I know how it works just too lazy
-				//The code has been heavily modified
+hackrouter = function(ip,lan)
 	
 	r=get_router(ip)
 	
@@ -103,8 +102,7 @@ end function
 
 
 
-hack = function(ip,port) //Some of the code here is from a example universal exploit script I know how it works just too lazy
-				// The code has been heavily modified
+hack = function(ip,port)
 	
 	r=get_router(ip)
 	
@@ -117,17 +115,6 @@ hack = function(ip,port) //Some of the code here is from a example universal exp
 		ex = lib.overflow(addr,unsec)
 		
 		if typeof(ex) == "computer" then
-			
-			home = ex.File("/home")
-			if not home == null then
-
-			for user in home.get_files
-				bank = ex.File("/home/"+user.name+"/Config/Bank.txt")
-				if not bank == null then
-					print(bank.content)
-				end if
-
-			end if
 
 			pwd = ex.File("/etc/passwd")
 			if not pwd == null then
