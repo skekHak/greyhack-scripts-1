@@ -183,8 +183,6 @@ system_shell = function()
 	if args[0] == "commands" then
 		print("\n<color=green>			Security Commands.</color>\n")
 		
-		print("		safemode -> Disables connections too your computer. <color=red>[Dangerous]</color>")
-		print("		safemode-disable -> Disables safemode. <color=red>[Failure too run this after safemode results in a bricked system]</color>")
 		print("		secure -> Removes programs/files that introduce security issues also chmods the system.")
 		print("		decipher [file] -> - Fancy version of the decipher tool\n")
 		
@@ -193,36 +191,6 @@ system_shell = function()
 		
 	end if
 	
-
-	if args[0] == "safemode" then
-		if active_user != "root" then
-			print("<color=red>Fantom requires root access in order too do this</color>")
-			system_shell
-		end if
-
-		lib = get_shell.host_computer.File("/lib/net.so")
-
-		if lib != null then
-			lib.rename("net.no")
-			print("<color=green>Success! safe mode activated</color>")
-		end if
-
-	end if
-
-	if args[0] == "safemode-disable" then
-		if active_user != "root" then
-			print("<color=red>Fantom requires root access in order too do this</color>")
-			system_shell
-		end if
-
-		lib = get_shell.host_computer.File("/lib/net.no")
-		if lib != null then
-			lib.rename("net.so")
-			print("<color=green>Success! safe mode activated</color>")
-		end if
-
-	end if
-
 
 	if args[0] == "decipher" then
 
